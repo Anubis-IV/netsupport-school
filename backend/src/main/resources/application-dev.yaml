@@ -1,15 +1,16 @@
 spring:
   datasource:
-    url: jdbc:sqlite:./backend/src/main/resources/netsupport.db
-    driver-class-name: org.sqlite.JDBC
+    url: jdbc:mysql://localhost:3306/netsupport_school?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    username: root
+    password: Admin@Abd123#
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
-    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
         format_sql: true
-        connection:
-          foreign_keys: true
+        use_sql_comments: true

@@ -13,6 +13,7 @@ public class Exam {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "exam_id")
     private Long examId;
 
     @Column(name = "title", nullable = false)

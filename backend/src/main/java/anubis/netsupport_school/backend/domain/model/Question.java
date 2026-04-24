@@ -34,7 +34,7 @@ public class Question {
     @Column(
             name = "correct_choice_id",
             nullable = false,
-            columnDefinition = "CHECK (correct_choice_id >= 0 AND correct_choice_id <= 3)"
+            columnDefinition = "INT NOT NULL CHECK (correct_choice_id BETWEEN 0 AND 3)"
     )
     private Integer correctChoiceId;
 

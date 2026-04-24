@@ -35,7 +35,7 @@ public class ResultAnswer {
     @Column(
             name = "selected_choice_id",
             nullable = false,
-            columnDefinition = "CHECK (selected_choice_id >= 0 AND selected_choice_id <= 3)"
+            columnDefinition = "INT NOT NULL CHECK (selected_choice_id BETWEEN 0 AND 3)"
     )
     private Integer selectedChoiceId;
 }
