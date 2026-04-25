@@ -20,4 +20,7 @@ public interface SessionService {
     void broadcastToTutors(BaseMessage message) throws IOException;
 
     WebSocketSession getStudent(String id);
+
+    /** Returns a snapshot of all currently open student sessions. */
+    List<WebSocketSession> getConnectedStudents();
 }

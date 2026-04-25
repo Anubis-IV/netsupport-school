@@ -156,17 +156,12 @@ public class ResultService {
         );
     }
 
-    /*
-    // =========================
-    // PDF REPORT
-    // =========================
-    public byte[] generatePdfReport(Long examId) {
+    @Transactional
+    public void clearAllResults() {
 
-        ResultsResponseDTO data = getResultsByExam(examId);
+        answerRepository.deleteAll();
 
-        // TODO integrate iText
-        return new byte[0];
+        // then delete results
+        resultRepository.deleteAll();
     }
-
-     */
 }
