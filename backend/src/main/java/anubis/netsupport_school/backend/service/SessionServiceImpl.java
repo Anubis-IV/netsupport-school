@@ -90,4 +90,12 @@ public class SessionServiceImpl implements SessionService {
                 sessionRepository.removeTutorSession(session);
         }
     }
+
+    @Override
+    public List<WebSocketSession> getConnectedStudents() {
+        updateRepository();                        // prune closed sessions first
+        return sessionRepository.getStudents();    // already a defensive copy
+    }
+
+
 }
