@@ -17,7 +17,7 @@
 
 spring:
   datasource:
-    url: jdbc:sqlite:./backend/src/main/resources/netsupport.db
+    url: jdbc:sqlite:./src/main/resources/netsupport.db
     driver-class-name: org.sqlite.JDBC
 
   jpa:
