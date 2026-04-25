@@ -2,10 +2,15 @@ package anubis.netsupport_school.backend.domain.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "questions")
+@ToString(exclude = "exam")
 public class Question {
 
     @Id

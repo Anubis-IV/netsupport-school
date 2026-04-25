@@ -17,11 +17,13 @@ import java.util.List;
 public class ExamService {
 
     private final ExamRepository examRepository;
+    private final QuestionRepository questionRepository;
 
 
     @Autowired
-    public ExamService(ExamRepository examRepository) {
+    public ExamService(ExamRepository examRepository,QuestionRepository  questionRepository) {
         this.examRepository = examRepository;
+        this.questionRepository = questionRepository;
 
     }
 
@@ -47,7 +49,6 @@ public class ExamService {
 
         Exam existing = getExamOrThrow(examId);
 
-        // remove old questions (simple approach)
         existing.getQuestions().clear();
 
         existing.setTitle(dto.title());

@@ -2,6 +2,7 @@ package anubis.netsupport_school.backend.domain.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,9 +26,19 @@ public class Exam {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "exam", cascade = CascadeType.ALL)
+    @OneToMany(
+            mappedBy = "exam",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+
+    )
     private List<Question> questions;
 
-    @OneToMany(mappedBy = "exam", cascade = CascadeType.ALL)
+    @OneToMany(
+            mappedBy = "exam",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+
+            )
     private List<Result> results;
 }
