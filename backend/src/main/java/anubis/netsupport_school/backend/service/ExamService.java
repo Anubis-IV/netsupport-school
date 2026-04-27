@@ -19,9 +19,11 @@ public class ExamService {
     private final ExamRepository examRepository;
 
 
+
     @Autowired
     public ExamService(ExamRepository examRepository) {
         this.examRepository = examRepository;
+
 
     }
 
@@ -47,7 +49,6 @@ public class ExamService {
 
         Exam existing = getExamOrThrow(examId);
 
-        // remove old questions (simple approach)
         existing.getQuestions().clear();
 
         existing.setTitle(dto.title());
