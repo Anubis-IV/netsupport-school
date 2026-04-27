@@ -17,13 +17,13 @@ import java.util.List;
 public class ExamService {
 
     private final ExamRepository examRepository;
-    private final QuestionRepository questionRepository;
+
 
 
     @Autowired
-    public ExamService(ExamRepository examRepository,QuestionRepository  questionRepository) {
+    public ExamService(ExamRepository examRepository) {
         this.examRepository = examRepository;
-        this.questionRepository = questionRepository;
+
 
     }
 

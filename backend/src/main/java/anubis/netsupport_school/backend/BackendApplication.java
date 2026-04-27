@@ -73,18 +73,5 @@ public class BackendApplication {
 		};
 	}
 
-//	@Bean
-//	public CorsConfigurationSource corsConfigurationSource() {
-//		CorsConfiguration configuration = new CorsConfiguration();
-//		configuration.addAllowedOriginPattern("*");
-//		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-//		configuration.setAllowedHeaders(List.of("*"));
-//		configuration.setAllowCredentials(true);
-//		// configuration.setExposedHeaders(List.of("Authorization", "Content-Disposition"));
-//
-//		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//		source.registerCorsConfiguration("/**", configuration);
-//		return source;
-//	}
 
 }
