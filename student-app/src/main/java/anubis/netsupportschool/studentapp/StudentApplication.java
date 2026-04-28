@@ -14,6 +14,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.io.File;
 import java.util.logging.Logger;
 
 /**
@@ -43,7 +44,7 @@ public class StudentApplication extends Application {
     // ── Application startup ──────────────────────────────────────────────────
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws InterruptedException {
         instance = this;
 
         // Keep JavaFX alive even when no windows are visible
@@ -52,6 +53,38 @@ public class StudentApplication extends Application {
         // Create services
         wsService  = new WebSocketService(this);
         udpService = new UDPDiscoveryService(wsService);
+
+        String exam = "{\n" +
+                "  \"type\": \"START_EXAM\",\n" +
+                "  \"examId\": 1,\n" +
+                "  \"title\": \"قواعد اللغة العربية\",\n" +
+                "  \"durationMinutes\": 1,\n" +
+                "  \"requireNameEntry\": true,\n" +
+                "  \"questions\": [\n" +
+                "    {\n" +
+                "      \"questionId\": 1,\n" +
+                "      \"text\": \"ما هو ناتج 2+2؟\",\n" +
+                "      \"choices\": [\n" +
+                "        { \"choiceId\": 0, \"text\": \"3\" },\n" +
+                "        { \"choiceId\": 1, \"text\": \"4\" },\n" +
+                "        { \"choiceId\": 2, \"text\": \"5\" },\n" +
+                "        { \"choiceId\": 3, \"text\": \"6\" }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}";
+        wsService.onMessage(exam);
+
+
+        // String lockReq = "{ \"type\": \"LOCK\" }";
+        // wsService.onMessage(lockReq);
+
+        //String unlockReq = "{ \"type\": \"UNLOCK\" }";
+        //wsService.onMessage(unlockReq);
+
+//        String stopExamReq = "{ \"type\": \"STOP_EXAM\" }";
+//        wsService.onMessage(stopExamReq);
+
 
         // Start UDP listener – waits for the Tutor to broadcast TUTOR_HERE
         udpService.startListening();
@@ -76,8 +109,10 @@ public class StudentApplication extends Application {
             lockScreen.showPlainLock();
             lockStage.show();
             lockStage.toFront();
+
             log.info("Lock screen shown.");
-        });
+        }
+        );
     }
 
     /** Tutor sent UNLOCK → destroy the lock window entirely. */
@@ -154,15 +189,18 @@ public class StudentApplication extends Application {
         Scene scene = new Scene(lockScreen.getRoot(), bounds.getWidth(), bounds.getHeight());
         scene.setFill(Color.BLACK);
         scene.getStylesheets().add(
-                getClass().getResource("/anubis/netsupportschool/studentapp/css/app.css").toExternalForm()
+                new File("D:\\Programming\\Java Projects\\NetSupportSchool\\student-app\\src\\main\\java\\anubis\\netsupportschool\\studentapp\\app.css")
+                        .toURI()
+                        .toString()
         );
+
 
         lockStage.setScene(scene);
         lockStage.setFullScreen(true);
         lockStage.setFullScreenExitHint("");          // hide "Press ESC" hint
         lockStage.setAlwaysOnTop(true);
 
-        // Prevent user from closing or minimising
+        // Prevent user from closing or minimizing
         lockStage.setOnCloseRequest(e -> e.consume());
     }
 

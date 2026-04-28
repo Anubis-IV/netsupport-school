@@ -128,7 +128,7 @@ public class WebSocketService {
 
     // ── Incoming message dispatch ─────────────────────────────────────────────
 
-    private void onMessage(String json) {
+    public void onMessage(String json) {
         log.info("WS received: " + json);
 
         String type = extract(TYPE_PAT, json);
@@ -145,7 +145,7 @@ public class WebSocketService {
                 app.startExam(parseExam(json));
                 break;
             case "STOP_EXAM":
-                app.stopExam(false);
+                app.stopExam(true);
                 break;
             case "TEST_LOGIN":
                 //TODO: /* no-op */
