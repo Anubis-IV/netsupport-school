@@ -1,0 +1,48 @@
+package anubis.netsupport_school.backend.domain.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "questions")
+@ToString(exclude = "exam")
+public class Question {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long questionId;
+
+    @ManyToOne
+    @JoinColumn(name = "exam_id")
+    private anubis.netsupport_school.backend.domain.model.Exam exam;
+
+    @Column(name = "text", nullable = false)
+    private String text;
+
+    @Column(name = "choice_0", nullable = false)
+    private String choice0;
+
+    @Column(name = "choice_1", nullable = false)
+    private String choice1;
+
+    @Column(name = "choice_2", nullable = false)
+    private String choice2;
+
+    @Column(name = "choice_3", nullable = false)
+    private String choice3;
+
+    @Column(
+            name = "correct_choice_id",
+            nullable = false,
+            columnDefinition = "INT NOT NULL CHECK (correct_choice_id BETWEEN 0 AND 3)"
+    )
+    private Integer correctChoiceId;
+
+
+
+}
