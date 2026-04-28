@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NetSupport School — Exam Designer</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ══════════════════ SIDEBAR ══════════════════ -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <span class="logo-mark">NS</span>
+        <span class="logo-text">NetSupport<br><em>School</em></span>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-view="exams">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            All Exams
+        </a>
+        <a href="#" class="nav-item" data-view="create">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            New Exam
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="server-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Connecting…</span>
+        </div>
+        <div class="server-config">
+            <label>API Base URL</label>
+            <input type="text" id="apiBase" value="http://localhost:8080" placeholder="http://localhost:8080" />
+        </div>
+    </div>
+</aside>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main class="main">
+
+    <!-- ── View: Exam List ── -->
+    <section class="view" id="view-exams">
+        <header class="view-header">
+            <div>
+                <h1 class="view-title">Exam Library</h1>
+                <p class="view-sub">All created exams — click to inspect or edit.</p>
+            </div>
+            <button class="btn-primary" id="goCreateBtn">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                New Exam
+            </button>
+        </header>
+
+        <div id="examGrid" class="exam-grid">
+            <!-- cards injected by JS -->
+        </div>
+
+        <div id="emptyState" class="empty-state hidden">
+            <div class="empty-icon">📋</div>
+            <h3>No exams yet</h3>
+            <p>Create your first exam to get started.</p>
+            <button class="btn-primary" id="emptyCreateBtn">Create Exam</button>
+        </div>
+
+        <div id="loadingState" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading exams…</p>
+        </div>
+    </section>
+
+    <!-- ── View: Create / Edit Exam ── -->
+    <section class="view hidden" id="view-create">
+        <header class="view-header">
+            <div>
+                <h1 class="view-title" id="formTitle">New Exam</h1>
+                <p class="view-sub" id="formSub">Fill in the exam details and add questions below.</p>
+            </div>
+            <button class="btn-ghost" id="cancelBtn">← Back to Library</button>
+        </header>
+
+        <div class="form-layout">
+
+            <!-- Exam meta -->
+            <div class="card form-meta-card">
+                <h2 class="card-title">Exam Details</h2>
+                <div class="field-group">
+                    <label class="field-label" for="examTitle">Exam Title <span class="required">*</span></label>
+                    <input class="field-input" type="text" id="examTitle" placeholder="e.g. Algebra Mid-Term 2026" />
+                    <span class="field-error hidden" id="errTitle">Title is required.</span>
+                </div>
+                <div class="field-group">
+                    <label class="field-label" for="examDuration">Duration (minutes) <span class="required">*</span></label>
+                    <input class="field-input" type="number" id="examDuration" min="1" max="300" placeholder="45" />
+                    <span class="field-error hidden" id="errDuration">Must be at least 1 minute.</span>
+                </div>
+            </div>
+
+            <!-- Questions -->
+            <div class="card questions-card">
+                <div class="questions-header">
+                    <h2 class="card-title">Questions <span class="q-count" id="qCount">0</span></h2>
+                    <button class="btn-accent" id="addQuestionBtn">+ Add Question</button>
+                </div>
+                <div id="questionsList" class="questions-list">
+                    <!-- question blocks injected here -->
+                </div>
+                <div id="noQuestionsHint" class="no-questions-hint">
+                    No questions yet — click <strong>+ Add Question</strong> to begin.
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <button class="btn-ghost" id="cancelBtn2">Cancel</button>
+                <button class="btn-primary" id="saveExamBtn">
+                    <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Exam
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ── View: Exam Detail ── -->
+    <section class="view hidden" id="view-detail">
+        <header class="view-header">
+            <div>
+                <h1 class="view-title" id="detailTitle">Exam Detail</h1>
+                <p class="view-sub" id="detailSub"></p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-ghost" id="backBtn">← Back</button>
+                <button class="btn-secondary" id="editBtn">Edit</button>
+                <button class="btn-danger" id="deleteBtn">Delete</button>
+            </div>
+        </header>
+        <div id="detailContent" class="detail-content">
+            <!-- injected by JS -->
+        </div>
+    </section>
+
+</main>
+
+<!-- ══════════════════ MODAL: Confirm Delete ══════════════════ -->
+<div class="modal-backdrop hidden" id="deleteModal">
+    <div class="modal">
+        <div class="modal-icon">🗑️</div>
+        <h3>Delete Exam?</h3>
+        <p>This action is permanent and cannot be undone. All questions and results will be removed.</p>
+        <div class="modal-actions">
+            <button class="btn-ghost" id="cancelDeleteBtn">Cancel</button>
+            <button class="btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ TOAST ══════════════════ -->
+<div class="toast hidden" id="toast">
+    <span id="toastMsg"></span>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
