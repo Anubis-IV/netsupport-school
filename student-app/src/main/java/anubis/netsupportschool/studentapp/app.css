@@ -1,0 +1,320 @@
+/* ═══════════════════════════════════════════════════════════
+   NetSupport School – Student App  CSS
+   Dark palette matching the designer-ui aesthetic
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Root / global ────────────────────────────────────────── */
+.root {
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-font-size:   14px;
+    -fx-background-color: #0e0f13;
+}
+
+/* ── Lock screen ──────────────────────────────────────────── */
+.lock-root {
+    -fx-background-color: #0e0f13;
+}
+
+.lock-splash {
+    -fx-alignment: center;
+}
+
+.lock-icon {
+    -fx-font-size:  72px;
+}
+
+.lock-title {
+    -fx-font-size:   28px;
+    -fx-font-weight: bold;
+    -fx-fill:        #e8e9f0;
+    -fx-text-alignment: center;
+}
+
+.lock-sub {
+    -fx-font-size: 15px;
+    -fx-fill:      #8b8fa8;
+    -fx-text-alignment: center;
+}
+
+.lock-clock {
+    -fx-font-size:   22px;
+    -fx-fill:        #f0a500;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+/* ── Name-entry box ───────────────────────────────────────── */
+.name-entry-box {
+    -fx-background-color: #161720;
+    -fx-border-color:     #2a2d45;
+    -fx-border-width:     1px;
+    -fx-border-radius:    12px;
+    -fx-background-radius:12px;
+    -fx-padding:          40px;
+    -fx-alignment:        center;
+}
+
+.ne-title {
+    -fx-font-size:   24px;
+    -fx-font-weight: bold;
+    -fx-fill:        #e8e9f0;
+}
+
+.ne-hint {
+    -fx-text-fill:  #8b8fa8;
+    -fx-font-size:  13px;
+    -fx-wrap-text:  true;
+}
+
+.ne-field {
+    -fx-background-color: #1e2030;
+    -fx-border-color:     #2a2d45;
+    -fx-border-width:     1px;
+    -fx-border-radius:    6px;
+    -fx-background-radius:6px;
+    -fx-text-fill:        #e8e9f0;
+    -fx-prompt-text-fill: #4e5270;
+    -fx-padding:          10px 14px;
+    -fx-font-size:        14px;
+}
+
+.ne-field:focused {
+    -fx-border-color: #f0a500;
+}
+
+.ne-error {
+    -fx-text-fill:  #e05252;
+    -fx-font-size:  12px;
+}
+
+/* ── Exam root ────────────────────────────────────────────── */
+.exam-root {
+    -fx-background-color: #0e0f13;
+}
+
+/* ── Exam header ──────────────────────────────────────────── */
+.exam-header {
+    -fx-background-color: #161720;
+    -fx-border-color:     transparent transparent #2a2d45 transparent;
+    -fx-border-width:     0 0 1 0;
+    -fx-min-height:       64px;
+    -fx-pref-height:      64px;
+    -fx-padding:          0 24 0 24;
+}
+
+.exam-title {
+    -fx-font-size:   20px;
+    -fx-font-weight: bold;
+    -fx-fill:        #e8e9f0;
+}
+
+.timer-label {
+    -fx-font-size:   10px;
+    -fx-fill:        #4e5270;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+.timer-value {
+    -fx-font-size:   28px;
+    -fx-font-weight: bold;
+    -fx-fill:        #4ade80;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+.timer-warn {
+    -fx-fill: #f0a500;
+}
+
+.timer-danger {
+    -fx-fill: #e05252;
+}
+
+/* ── Navigator panel ──────────────────────────────────────── */
+.nav-scroll {
+    -fx-background-color: #161720;
+    -fx-border-color:     transparent #2a2d45 transparent transparent;
+    -fx-border-width:     0 1 0 0;
+    -fx-pref-width:       120px;
+}
+
+.nav-scroll > .viewport {
+    -fx-background-color: #161720;
+}
+
+.nav-panel {
+    -fx-background-color: #161720;
+    -fx-padding:          16px;
+    -fx-spacing:          8px;
+}
+
+.nav-title {
+    -fx-font-size:   11px;
+    -fx-fill:        #4e5270;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+.nav-btn {
+    -fx-background-color: #1e2030;
+    -fx-border-color:     #2a2d45;
+    -fx-border-width:     1px;
+    -fx-border-radius:    6px;
+    -fx-background-radius:6px;
+    -fx-text-fill:        #8b8fa8;
+    -fx-font-size:        13px;
+    -fx-cursor:           hand;
+    -fx-pref-height:      36px;
+}
+
+.nav-btn:hover {
+    -fx-background-color: #262840;
+    -fx-text-fill:        #e8e9f0;
+}
+
+.nav-btn-active {
+    -fx-background-color: rgba(240,165,0,0.12);
+    -fx-border-color:     rgba(240,165,0,0.4);
+    -fx-text-fill:        #f0a500;
+}
+
+.nav-btn-answered {
+    -fx-background-color: rgba(74,222,128,0.08);
+    -fx-border-color:     rgba(74,222,128,0.3);
+    -fx-text-fill:        #4ade80;
+}
+
+/* ── Question area ────────────────────────────────────────── */
+.q-scroll {
+    -fx-background-color: #0e0f13;
+}
+
+.q-scroll > .viewport {
+    -fx-background-color: #0e0f13;
+}
+
+.question-area {
+    -fx-background-color: #0e0f13;
+    -fx-padding:          40px 60px;
+    -fx-spacing:          24px;
+}
+
+.q-number {
+    -fx-font-size:   11px;
+    -fx-fill:        #f0a500;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+.q-text {
+    -fx-font-size:   17px;
+    -fx-fill:        #e8e9f0;
+    -fx-font-weight: 500;
+    -fx-line-spacing:4px;
+}
+
+.choices-box {
+    -fx-spacing: 12px;
+}
+
+.choice-row {
+    -fx-background-color: #161720;
+    -fx-border-color:     #2a2d45;
+    -fx-border-width:     1px;
+    -fx-border-radius:    8px;
+    -fx-background-radius:8px;
+    -fx-padding:          14px 18px;
+    -fx-cursor:           hand;
+}
+
+.choice-row:hover {
+    -fx-background-color: #1e2030;
+    -fx-border-color:     #353860;
+}
+
+.choice-badge {
+    -fx-background-color: #262840;
+    -fx-border-color:     #353860;
+    -fx-border-width:     1px;
+    -fx-border-radius:    4px;
+    -fx-background-radius:4px;
+    -fx-text-fill:        #8b8fa8;
+    -fx-font-size:        11px;
+    -fx-font-weight:      bold;
+    -fx-font-family:      "Consolas", "Courier New", monospace;
+    -fx-padding:          2px 7px;
+    -fx-min-width:        24px;
+}
+
+.choice-radio {
+    -fx-text-fill: #e8e9f0;
+    -fx-font-size: 14px;
+}
+
+.choice-radio:selected {
+    -fx-text-fill: #f0a500;
+}
+
+/* ── Exam footer ──────────────────────────────────────────── */
+.exam-footer {
+    -fx-background-color: #161720;
+    -fx-border-color:     #2a2d45 transparent transparent transparent;
+    -fx-border-width:     1 0 0 0;
+    -fx-min-height:       60px;
+    -fx-pref-height:      60px;
+}
+
+.progress-text {
+    -fx-font-size:   13px;
+    -fx-fill:        #8b8fa8;
+    -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn-primary {
+    -fx-background-color: #f0a500;
+    -fx-text-fill:        #000000;
+    -fx-font-weight:      bold;
+    -fx-font-size:        13px;
+    -fx-padding:          10px 22px;
+    -fx-border-radius:    6px;
+    -fx-background-radius:6px;
+    -fx-cursor:           hand;
+}
+
+.btn-primary:hover {
+    -fx-opacity: 0.88;
+}
+
+.btn-secondary {
+    -fx-background-color: #1e2030;
+    -fx-border-color:     #353860;
+    -fx-border-width:     1px;
+    -fx-border-radius:    6px;
+    -fx-background-radius:6px;
+    -fx-text-fill:        #e8e9f0;
+    -fx-font-size:        13px;
+    -fx-padding:          9px 18px;
+    -fx-cursor:           hand;
+}
+
+.btn-secondary:hover {
+    -fx-background-color: #262840;
+}
+
+/* ── Scrollbar styling ────────────────────────────────────── */
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #2a2d45;
+    -fx-border-radius:    3px;
+    -fx-background-radius:3px;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #4e5270;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding:          0;
+}

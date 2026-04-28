@@ -1,12 +1,11 @@
 module anubis.netsupportschool.studentapp {
     requires javafx.controls;
     requires javafx.fxml;
-
-    requires org.controlsfx.controls;
-    requires com.dlsc.formsfx;
-    requires org.kordamp.ikonli.javafx;
-    requires org.kordamp.bootstrapfx.core;
+    requires javafx.graphics;
+    requires java.net.http;
+    requires java.logging;
 
     opens anubis.netsupportschool.studentapp to javafx.fxml;
+    opens anubis.netsupportschool.studentapp.ui to javafx.fxml;
     exports anubis.netsupportschool.studentapp;
 }
