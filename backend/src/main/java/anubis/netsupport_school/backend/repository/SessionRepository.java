@@ -14,4 +14,6 @@ public interface SessionRepository {
     List<WebSocketSession> getTutors();
 
     WebSocketSession getStudent(String id);
+
+    WebSocketSession getTutor(String id);
 }

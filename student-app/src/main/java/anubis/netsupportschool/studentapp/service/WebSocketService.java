@@ -57,8 +57,10 @@ public class WebSocketService {
         String uri = "ws://" + ip + ":" + port + "/websocket";
         log.info("Connecting to " + uri);
 
+        HttpClient client = HttpClient.newHttpClient();
+
         try {
-            HttpClient client = HttpClient.newHttpClient();
+            client = HttpClient.newHttpClient();
             client.newWebSocketBuilder()
                     .buildAsync(URI.create(uri), new WsListener())
                     .thenAccept(ws -> {
@@ -74,6 +76,8 @@ public class WebSocketService {
                     });
         } catch (Exception e) {
             log.severe("WebSocket connect error: " + e.getMessage());
+        }finally {
+            //if(client != null) client.close();
         }
     }
 
@@ -148,7 +152,7 @@ public class WebSocketService {
                 app.stopExam(true);
                 break;
             case "TEST_LOGIN":
-                //TODO: /* no-op */
+                app.testLogin();
                 break;
             default:
                 log.info("Unhandled message type: " + type);

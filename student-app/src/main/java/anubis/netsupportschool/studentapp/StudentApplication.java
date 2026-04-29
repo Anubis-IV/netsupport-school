@@ -73,7 +73,7 @@ public class StudentApplication extends Application {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        wsService.onMessage(exam);
+        //wsService.onMessage(exam);
 
 
         // String lockReq = "{ \"type\": \"LOCK\" }";
@@ -209,6 +209,28 @@ public class StudentApplication extends Application {
         lockScreen.showContent(examView.getRoot());
         lockStage.toFront();
     }
+
+    public void testLogin() {
+        Platform.runLater(() -> {
+            // Ensure the lock stage exists
+            if (lockStage == null) {
+                createLockStage();
+                lockStage.show();
+            }
+
+            if (wsService.getStudentName().startsWith("Student ")) {
+                // Show name-entry screen first
+                NameEntryView nameEntry = new NameEntryView(name -> {
+                    wsService.sendStudentName(name);
+                    hideLock();
+                });
+                lockScreen.showContent(nameEntry.getRoot());
+            } else {
+                hideLock();
+            }
+        });
+    }
+
 
     // ── Shutdown ─────────────────────────────────────────────────────────────
 
