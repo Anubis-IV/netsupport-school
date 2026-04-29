@@ -97,5 +97,16 @@ public class SessionServiceImpl implements SessionService {
         return sessionRepository.getStudents();    // already a defensive copy
     }
 
+    @Override
+    public void broadcastToTutor(String id, BaseMessage onlineMessage) throws IOException {
+        updateRepository();
+        var session = sessionRepository.getTutor(id);
+
+        if(session.isOpen()) {
+            String json = mapper.writeValueAsString(onlineMessage);
+            session.sendMessage(new TextMessage(json));
+        }
+    }
+
 
 }

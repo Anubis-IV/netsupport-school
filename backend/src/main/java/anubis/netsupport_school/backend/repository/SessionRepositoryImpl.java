@@ -46,4 +46,9 @@ public class SessionRepositoryImpl implements SessionRepository{
     public WebSocketSession getStudent(String id) {
         return studentsMap.get(id);
     }
+
+    @Override
+    public WebSocketSession getTutor(String id) {
+        return tutorsMap.get(id);
+    }
 }

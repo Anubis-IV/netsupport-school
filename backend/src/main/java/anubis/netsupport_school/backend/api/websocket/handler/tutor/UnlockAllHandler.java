@@ -2,6 +2,7 @@ package anubis.netsupport_school.backend.api.websocket.handler.tutor;
 
 import anubis.netsupport_school.backend.api.websocket.handler.MessageHandler;
 import anubis.netsupport_school.backend.domain.dto.websocket.UnlockAllMessage;
+import anubis.netsupport_school.backend.domain.dto.websocket.UnlockMessage;
 import anubis.netsupport_school.backend.service.SessionService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
@@ -18,7 +19,7 @@ public class UnlockAllHandler implements MessageHandler<UnlockAllMessage> {
 
     @Override
     public void handle(WebSocketSession session, UnlockAllMessage message) throws IOException {
-        sessionService.broadcastToAllStudents(message);
+        sessionService.broadcastToAllStudents(new UnlockMessage());
     }
 
     @Override

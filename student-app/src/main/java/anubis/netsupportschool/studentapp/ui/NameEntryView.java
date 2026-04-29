@@ -54,7 +54,7 @@ public class NameEntryView {
         };
 
         confirmBtn.setOnAction(e -> confirm.run());
-        nameField.setOnAction(e -> confirm.run());
+        //nameField.setOnAction(e -> confirm.run());
 
         root.getChildren().addAll(title, hint, nameField, errorLabel, confirmBtn);
     }
