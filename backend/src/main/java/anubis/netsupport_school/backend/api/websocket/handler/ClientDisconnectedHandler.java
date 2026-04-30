@@ -3,11 +3,13 @@ package anubis.netsupport_school.backend.api.websocket.handler;
 import anubis.netsupport_school.backend.domain.dto.websocket.ClientDisconnectedMessage;
 import anubis.netsupport_school.backend.domain.dto.websocket.StudentOfflineMessage;
 import anubis.netsupport_school.backend.service.SessionService;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.WebSocketClient;
 
 import java.io.IOException;
 
+@Component
 public class ClientDisconnectedHandler implements MessageHandler<ClientDisconnectedMessage> {
     private final SessionService sessionService;
 

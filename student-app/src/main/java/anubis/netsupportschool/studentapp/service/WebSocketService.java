@@ -57,7 +57,7 @@ public class WebSocketService {
         String uri = "ws://" + ip + ":" + port + "/websocket";
         log.info("Connecting to " + uri);
 
-        HttpClient client = HttpClient.newHttpClient();
+        HttpClient client;
 
         try {
             client = HttpClient.newHttpClient();
@@ -68,7 +68,6 @@ public class WebSocketService {
                         this.connected = true;
                         log.info("WebSocket connected.");
                         sendRegister();
-                        startHeartbeat();
                     })
                     .exceptionally(ex -> {
                         log.severe("WebSocket connect failed: " + ex.getMessage());
@@ -76,8 +75,6 @@ public class WebSocketService {
                     });
         } catch (Exception e) {
             log.severe("WebSocket connect error: " + e.getMessage());
-        }finally {
-            //if(client != null) client.close();
         }
     }
 
@@ -87,6 +84,7 @@ public class WebSocketService {
         if (webSocket != null) {
             webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "bye");
         }
+
     }
 
     // ── Outgoing messages ─────────────────────────────────────────────────────
@@ -159,18 +157,6 @@ public class WebSocketService {
         }
     }
 
-    // ── Heartbeat ─────────────────────────────────────────────────────────────
-
-    private void startHeartbeat() {
-        scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = new Thread(r, "ws-heartbeat");
-            t.setDaemon(true);
-            return t;
-        });
-        // The backend doesn't define a PING type in BaseMessage, so we skip
-        // sending actual pings – the WebSocket layer handles keep-alive.
-        // If needed later, a PING message type can be added here.
-    }
 
     // ── Internal helpers ──────────────────────────────────────────────────────
 
@@ -281,6 +267,10 @@ public class WebSocketService {
             }
         }
         return list;
+    }
+
+    public void clearStudentName() {
+        this.studentName = null;
     }
 
     // ── WebSocket Listener ────────────────────────────────────────────────────

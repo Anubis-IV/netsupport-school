@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = LockMessage.class,          name = "LOCK"),
         @JsonSubTypes.Type(value = UnlockMessage.class,        name = "UNLOCK"),
         @JsonSubTypes.Type(value = StartExamMessage.class,     name = "START_EXAM"),
+        @JsonSubTypes.Type(value = TutorStartExamMessage.class,     name = "TUTOR_START_EXAM"),
         @JsonSubTypes.Type(value = StopExamMessage.class,      name = "STOP_EXAM"),
         @JsonSubTypes.Type(value = RegisterMessage.class,      name = "REGISTER"),
         @JsonSubTypes.Type(value = SubmitAnswersMessage.class,  name = "SUBMIT_ANSWERS"),
