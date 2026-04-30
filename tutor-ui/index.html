@@ -1,13 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NetSupport School — Tutor Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <h1>
-        HI Folish.
-    </h1>
+
+<!-- ══════════════════ SIDEBAR ══════════════════ -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <span class="logo-mark">NS</span>
+        <span class="logo-text">NetSupport<br><em>Tutor</em></span>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-view="dashboard">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard
+        </a>
+        <a href="#" class="nav-item" data-view="exam-results">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Exam Results
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="server-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Disconnected</span>
+        </div>
+        <div class="server-config">
+            <label>Server URL</label>
+            <input type="text" id="serverUrl" value="localhost:8080" placeholder="ip:port" />
+        </div>
+        <button class="btn-connect" id="connectBtn">Connect</button>
+    </div>
+</aside>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main class="main">
+
+    <!-- ── View: Dashboard ── -->
+    <section class="view" id="view-dashboard">
+        <header class="view-header">
+            <div>
+                <h1 class="view-title">Student Dashboard</h1>
+                <p class="view-sub">Monitor and control connected students in real time.</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn-secondary" id="scanBtn" disabled>
+                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Scan Students
+                </button>
+                <button class="btn-secondary" id="testLoginBtn" disabled>
+                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Test Login
+                </button>
+                <button class="btn-danger-sm" id="lockAllBtn" disabled>
+                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                    Lock All
+                </button>
+                <button class="btn-accent" id="unlockAllBtn" disabled>
+                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 019.9-1"/></svg>
+                    Unlock All
+                </button>
+                <button class="btn-primary" id="startExamBtn" disabled>
+                    <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    Start Exam
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-chip">
+                <span class="stat-value" id="statTotal">0</span>
+                <span class="stat-label">Online</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-value" id="statLocked">0</span>
+                <span class="stat-label">Locked</span>
+            </div>
+            <div class="stat-chip">
+                <span class="stat-value" id="statSubmitted">0</span>
+                <span class="stat-label">Submitted</span>
+            </div>
+            <div class="stat-chip active-exam-chip hidden" id="activeExamChip">
+                <span class="stat-value" id="activeExamTitle">—</span>
+                <span class="stat-label">Active Exam</span>
+            </div>
+            <div class="stat-chip hidden" id="stopExamChip">
+                <button class="btn-danger-sm" id="stopExamBtn">
+                    <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" fill="none" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                    Stop Exam
+                </button>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <label class="checkbox-all">
+                    <input type="checkbox" id="selectAll" />
+                    <span>Select All</span>
+                </label>
+                <span class="selection-count hidden" id="selectionCount">0 selected</span>
+            </div>
+            <div class="toolbar-right">
+                <div class="search-box">
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="searchInput" placeholder="Search students…" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Grid -->
+        <div id="studentGrid" class="student-grid">
+            <!-- cards injected by JS -->
+        </div>
+
+        <div id="emptyState" class="empty-state">
+            <div class="empty-icon">📡</div>
+            <h3>No Students Connected</h3>
+            <p>Connect to the server and click <strong>Scan Students</strong> to discover students on the LAN.</p>
+        </div>
+    </section>
+
+    <!-- ── View: Exam Results ── -->
+    <section class="view hidden" id="view-exam-results">
+        <header class="view-header">
+            <div>
+                <h1 class="view-title">Exam Results</h1>
+                <p class="view-sub">View and download results for any exam.</p>
+            </div>
+            <button class="btn-secondary" id="refreshResultsBtn">
+                <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                Refresh
+            </button>
+        </header>
+
+        <div class="results-layout">
+            <div class="exam-picker-panel">
+                <h3 class="panel-title">Select Exam</h3>
+                <div id="examPickerList" class="exam-picker-list">
+                    <div class="loading-small">Loading exams…</div>
+                </div>
+            </div>
+            <div class="results-panel">
+                <div id="resultsEmpty" class="empty-state-small">
+                    <div class="empty-icon" style="font-size:32px">📋</div>
+                    <p>Select an exam to view results.</p>
+                </div>
+                <div id="resultsContent" class="hidden">
+                    <div class="results-header-bar">
+                        <div>
+                            <h3 id="resultsExamTitle" class="results-exam-title">—</h3>
+                            <p id="resultsExamMeta" class="results-exam-meta"></p>
+                        </div>
+                        <div class="results-actions">
+                            <button class="btn-secondary" id="clearResultsBtn">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                                Clear
+                            </button>
+                            <a class="btn-primary" id="downloadReportBtn" href="#" target="_blank">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                PDF Report
+                            </a>
+                        </div>
+                    </div>
+                    <div class="results-summary" id="resultsSummary"></div>
+                    <div class="results-table-wrap">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Student ID</th>
+                                    <th>Hostname</th>
+                                    <th>Score</th>
+                                    <th>Answered</th>
+                                    <th>Submitted At</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- ══════════════════ MODAL: Start Exam ══════════════════ -->
+<div class="modal-backdrop hidden" id="startExamModal">
+    <div class="modal modal-wide">
+        <div class="modal-header">
+            <h3>Launch Exam</h3>
+            <button class="modal-close" id="closeStartExamModal">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-section">
+                <label class="field-label">Select Exam <span class="required">*</span></label>
+                <select class="field-input" id="modalExamSelect">
+                    <option value="">— Choose an exam —</option>
+                </select>
+            </div>
+            <div class="modal-section">
+                <label class="field-label">
+                    <input type="checkbox" id="modalRequireName" style="margin-right:8px;" />
+                    Require Name Entry
+                </label>
+                <p class="field-hint">Students will be prompted to enter their name before the exam begins.</p>
+            </div>
+            <div class="modal-section">
+                <label class="field-label">Target Students</label>
+                <div class="modal-student-list" id="modalStudentList">
+                    <!-- populated by JS -->
+                </div>
+                <div class="modal-student-actions">
+                    <button class="btn-ghost-sm" id="modalSelectAll">Select All</button>
+                    <button class="btn-ghost-sm" id="modalDeselectAll">Deselect All</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-ghost" id="cancelStartExamBtn">Cancel</button>
+            <button class="btn-primary" id="confirmStartExamBtn">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Launch Exam
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════ TOAST ══════════════════ -->
+<div class="toast hidden" id="toast">
+    <span id="toastMsg"></span>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
