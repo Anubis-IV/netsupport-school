@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 
@@ -27,6 +28,7 @@ public class ResultService {
     private final ResultAnswerRepository answerRepository;
     private final QuestionRepository questionRepository;
     private final ExamRepository examRepository;
+    private final Map<String, Object> locks = new ConcurrentHashMap<>();
 
     @Autowired
     public ResultService(ResultRepository resultRepository,
@@ -43,7 +45,7 @@ public class ResultService {
     // SAVE OR UPDATE ANSWERS
     // =========================
     @Transactional
-    public Result saveOrUpdateAnswers(
+    private Result doSaveOrUpdateAnswers(
             Long examId,
             String studentId,
             String studentName,
@@ -75,7 +77,7 @@ public class ResultService {
         result.setHostname(hostname);
         result.setSubmittedAt(LocalDateTime.now());
 
-        final Result savedResult = resultRepository.save(result);
+        //final Result savedResult = resultRepository.save(result);
 
         // 3. delete old answers (FAST)
         answerRepository.deleteByResultResultId(result.getResultId());
@@ -87,7 +89,7 @@ public class ResultService {
                     ResultAnswer a = new ResultAnswer();
 
 
-                    a.setResult(savedResult);
+                    a.setResult(result);
 
 
                     Question q = questionRepository.getReferenceById(entry.getKey());
@@ -100,14 +102,27 @@ public class ResultService {
                 })
                 .toList();
 
+        var res = resultRepository.save(result);
         answerRepository.saveAll(newAnswers);
 
         // 5. calculate score
         calculateScore(result, newAnswers);
 
-        return resultRepository.save(result);
+        return res;
     }
 
+    @Transactional
+    public Result saveOrUpdateAnswers(Long examId,
+                                                  String studentId,
+                                                  String studentName,
+                                                  String hostname,
+                                                  Map<Long, Integer> answersMap) {
+        Object lock = locks.computeIfAbsent(studentId, k -> new Object());
+
+        synchronized (lock) {
+            return doSaveOrUpdateAnswers(examId, studentId, studentName, hostname, answersMap);
+        }
+    }
     // =========================
     // SCORE CALCULATION (OPTIMIZED)
     // =========================

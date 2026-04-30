@@ -5,6 +5,7 @@ import anubis.netsupport_school.backend.domain.dto.websocket.StudentSubmittedMes
 import anubis.netsupport_school.backend.domain.dto.websocket.SubmitAnswersMessage;
 import anubis.netsupport_school.backend.service.ResultService;
 import anubis.netsupport_school.backend.service.SessionService;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 import java.io.IOException;

@@ -29,8 +29,8 @@ public class Exam {
     @OneToMany(
             mappedBy = "exam",
             cascade = CascadeType.ALL,
-            orphanRemoval = true
-
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
     )
     private List<Question> questions;
 

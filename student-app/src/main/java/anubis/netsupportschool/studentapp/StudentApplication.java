@@ -26,6 +26,8 @@ import java.util.logging.Logger;
  *   On UNLOCK      → destroy lock window, restore desktop
  *   On START_EXAM  → show exam UI inside the lock window
  *   On STOP_EXAM   → close exam, submit answers, show plain lock or unlock
+ *
+ * FIXED: Proper cleanup of ExamView when exam ends
  */
 public class StudentApplication extends Application {
 
@@ -34,11 +36,11 @@ public class StudentApplication extends Application {
     // Singleton-style access so services can call back into UI layer
     private static StudentApplication instance;
 
-    private Stage  lockStage;
-    private LockScreen  lockScreen;
-    private ExamView    examView;
+    private Stage lockStage;
+    private LockScreen lockScreen;
+    private ExamView examView;
 
-    private WebSocketService    wsService;
+    private WebSocketService wsService;
     private UDPDiscoveryService udpService;
 
     // ── Application startup ──────────────────────────────────────────────────
@@ -51,7 +53,7 @@ public class StudentApplication extends Application {
         Platform.setImplicitExit(false);
 
         // Create services
-        wsService  = new WebSocketService(this);
+        wsService = new WebSocketService(this);
         udpService = new UDPDiscoveryService(wsService);
 
         String exam = "{\n" +
@@ -103,15 +105,15 @@ public class StudentApplication extends Application {
     /** Tutor sent LOCK → show/bring-forward the fullscreen lock window. */
     public void showLock() {
         Platform.runLater(() -> {
-            if (lockStage == null) {
-                createLockStage();
-            }
-            lockScreen.showPlainLock();
-            lockStage.show();
-            lockStage.toFront();
+                    if (lockStage == null) {
+                        createLockStage();
+                    }
+                    lockScreen.showPlainLock();
+                    lockStage.show();
+                    lockStage.toFront();
 
-            log.info("Lock screen shown.");
-        }
+                    log.info("Lock screen shown.");
+                }
         );
     }
 
@@ -123,7 +125,7 @@ public class StudentApplication extends Application {
                 lockStage.close();
                 lockStage = null;
                 lockScreen = null;
-                examView   = null;
+                examView = null;
             }
             log.info("Lock screen hidden.");
         });
@@ -156,40 +158,59 @@ public class StudentApplication extends Application {
         });
     }
 
-    /** Exam ended (STOP_EXAM or timer) – submit and return to plain lock. */
+    /**
+     * Exam ended (STOP_EXAM or timer) – submit and return to plain lock or unlock.
+     *
+     * FIXED: Properly cleans up the exam view and replaces it with lock screen content.
+     *
+     * @param unlock  true → unlock the computer entirely; false → show plain lock screen
+     */
     public void stopExam(boolean unlock) {
         Platform.runLater(() -> {
+            // Step 1: Force-submit the exam (marks it as inactive, stops timer)
             if (examView != null) {
                 examView.forceSubmit();
-                examView = null;
             }
+
+            // Step 2: Remove the exam view from scene graph
             if (unlock) {
+                // UNLOCK: completely close the lock screen
                 hideLock();
             } else {
+                // LOCK: replace exam with plain lock screen
                 if (lockScreen != null) {
-                    lockScreen.showPlainLock();
+                    lockScreen.showPlainLock();  // This replaces the center content
                 }
             }
+
+            // Step 3: Clear the exam reference
+            examView = null;
+
+            log.info("Exam stopped. Unlock: " + unlock);
         });
     }
 
     // ── Package-private helpers ──────────────────────────────────────────────
 
-    WebSocketService getWsService() { return wsService; }
+    WebSocketService getWsService() {
+        return wsService;
+    }
 
-    static StudentApplication getInstance() { return instance; }
+    static StudentApplication getInstance() {
+        return instance;
+    }
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
     private void createLockStage() {
-        lockStage  = new Stage(StageStyle.UNDECORATED);
+        lockStage = new Stage(StageStyle.UNDECORATED);
         lockScreen = new LockScreen();
 
         Rectangle2D bounds = Screen.getPrimary().getBounds();
         Scene scene = new Scene(lockScreen.getRoot(), bounds.getWidth(), bounds.getHeight());
         scene.setFill(Color.BLACK);
         scene.getStylesheets().add(
-                new File("D:\\Programming\\Java Projects\\NetSupportSchool\\student-app\\src\\main\\java\\anubis\\netsupportschool\\studentapp\\app.css")
+                new File("/home/mahmoud/Documents/faculty-temps/term-2/labs/netsupport-school/student-app/src/main/java/anubis/netsupportschool/studentapp/app.css")
                         .toURI()
                         .toString()
         );
@@ -204,12 +225,6 @@ public class StudentApplication extends Application {
         lockStage.setOnCloseRequest(e -> e.consume());
     }
 
-    private void showExamInLock(ExamData examData) {
-        examView = new ExamView(examData, wsService);
-        lockScreen.showContent(examView.getRoot());
-        lockStage.toFront();
-    }
-
     public void testLogin() {
         Platform.runLater(() -> {
             // Ensure the lock stage exists
@@ -218,25 +233,30 @@ public class StudentApplication extends Application {
                 lockStage.show();
             }
 
-            if (wsService.getStudentName().startsWith("Student ")) {
-                // Show name-entry screen first
-                NameEntryView nameEntry = new NameEntryView(name -> {
-                    wsService.sendStudentName(name);
-                    hideLock();
-                });
-                lockScreen.showContent(nameEntry.getRoot());
-            } else {
+            // Show name-entry screen first
+            NameEntryView nameEntry = new NameEntryView(name -> {
+                wsService.sendStudentName(name);
                 hideLock();
-            }
+            });
+            lockScreen.showContent(nameEntry.getRoot());
         });
     }
 
+    private void showExamInLock(ExamData examData) {
+        examView = new ExamView(examData, wsService, this);
+        lockScreen.showContent(examView.getRoot());
+        lockStage.toFront();
+    }
 
     // ── Shutdown ─────────────────────────────────────────────────────────────
 
     @Override
     public void stop() {
-        if (wsService  != null) wsService.disconnect();
-        if (udpService != null) udpService.stop();
+        if (wsService != null) {
+            wsService.disconnect();
+        }
+        if (udpService != null) {
+            udpService.stop();
+        }
     }
 }

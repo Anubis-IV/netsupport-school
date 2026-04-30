@@ -23,7 +23,7 @@ public class TutorOnlineHandler implements MessageHandler<TutorOnlineMessage> {
 
         for(var connectedStudent : sessionService.getConnectedStudents()){
             var onlineMessage = new StudentOnlineMessage();
-            onlineMessage.studentId = session.getId();
+            onlineMessage.studentId = connectedStudent.getId();
             onlineMessage.studentName = (String)connectedStudent.getAttributes().get("name");
 
             sessionService.broadcastToTutor(session.getId(), onlineMessage);

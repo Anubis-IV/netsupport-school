@@ -1,6 +1,7 @@
 package anubis.netsupportschool.studentapp.ui;
 
 import anubis.netsupportschool.studentapp.ExamData;
+import anubis.netsupportschool.studentapp.StudentApplication;
 import anubis.netsupportschool.studentapp.service.WebSocketService;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -13,7 +14,9 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,11 +34,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  * On every answer selection answers are also sent as ANSWER_CHANGE so the
  * tutor can see live progress.
+ *
+ * FIXES:
+ *   - ConcurrentModificationException: Detach RadioButtons before clearing group
+ *   - Proper cleanup: Clear exam view and stop timer when exam ends
  */
 public class ExamView {
 
     private final ExamData exam;
-    private final WebSocketService  wsService;
+    private final WebSocketService wsService;
 
     // Answer state: questionId → selectedChoiceId  (-1 = unanswered)
     private final Map<Long, Integer> answers = new HashMap<>();
@@ -43,21 +50,24 @@ public class ExamView {
     private int currentIndex = 0;
 
     // UI nodes
-    private final BorderPane          root;
-    private final Text                timerText;
-    private final VBox                navPanel;
-    private final ToggleGroup         choiceGroup = new ToggleGroup();
-    private final VBox                questionArea;
-    private final Button[]            navButtons;
-    private Timeline            countdownTimeline = null;
+    private final BorderPane root;
+    private final Text timerText;
+    private final VBox navPanel;
+    private final ToggleGroup choiceGroup = new ToggleGroup();
+    private final VBox questionArea;
+    private final Button[] navButtons;
+    private Timeline countdownTimeline = null;
 
     private final AtomicBoolean submitted = new AtomicBoolean(false);
+    private final AtomicBoolean isExamActive = new AtomicBoolean(true);
+    private final StudentApplication studentApplication;
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
-    public ExamView(ExamData exam, WebSocketService wsService) {
-        this.exam      = exam;
+    public ExamView(ExamData exam, WebSocketService wsService, StudentApplication studentApplication) {
+        this.exam = exam;
         this.wsService = wsService;
+        this.studentApplication = studentApplication;
 
         // Initialise answers map
         for (ExamData.Question q : exam.questions) {
@@ -121,8 +131,8 @@ public class ExamView {
         footer.setAlignment(Pos.CENTER_RIGHT);
         footer.setPadding(new Insets(12, 24, 12, 24));
 
-        Button prevBtn   = new Button("← Previous");
-        Button nextBtn   = new Button("Next →");
+        Button prevBtn = new Button("← Previous");
+        Button nextBtn = new Button("Next →");
         Button submitBtn = new Button("Submit Exam");
         prevBtn.getStyleClass().add("btn-secondary");
         nextBtn.getStyleClass().add("btn-secondary");
@@ -153,8 +163,12 @@ public class ExamView {
             timerText.setText(formatTime(secondsLeft[0]));
 
             // Warn when ≤ 5 minutes remain
-            if (secondsLeft[0] <= 300) timerText.getStyleClass().add("timer-warn");
-            if (secondsLeft[0] <= 60)  timerText.getStyleClass().add("timer-danger");
+            if (secondsLeft[0] <= 300) {
+                timerText.getStyleClass().add("timer-warn");
+            }
+            if (secondsLeft[0] <= 60) {
+                timerText.getStyleClass().add("timer-danger");
+            }
 
             if (secondsLeft[0] <= 0) {
                 countdownTimeline.stop();
@@ -165,14 +179,23 @@ public class ExamView {
         countdownTimeline.play();
     }
 
-    public Node getRoot() { return root; }
+    public Node getRoot() {
+        return root;
+    }
 
     /**
      * Called by StudentApplication when STOP_EXAM arrives or window is closing.
      * Submits once and stops the timer.
      */
     public void forceSubmit() {
-        countdownTimeline.stop();
+        if (!isExamActive.getAndSet(false)) {
+            return;  // Already ended, prevent double submission
+        }
+
+        if (countdownTimeline != null) {
+            countdownTimeline.stop();
+        }
+
         submitAnswers("TUTOR_STOPPED");
     }
 
@@ -194,8 +217,16 @@ public class ExamView {
         }
     }
 
+    /**
+     * Display the question at the given index.
+     *
+     * FIX: Properly detach toggle buttons from group before clearing to avoid
+     * ConcurrentModificationException when iterating over group's toggle list.
+     */
     private void showQuestion(int index) {
-        if (index < 0 || index >= exam.questions.size()) return;
+        if (index < 0 || index >= exam.questions.size()) {
+            return;
+        }
 
         // Save current selection before switching
         saveCurrentSelection();
@@ -222,8 +253,15 @@ public class ExamView {
         VBox choicesBox = new VBox(12);
         choicesBox.getStyleClass().add("choices-box");
 
-        // Detach group momentarily to avoid firing change listeners
-        choiceGroup.getToggles().forEach(t -> ((RadioButton) t).setToggleGroup(null));
+        // ── FIX: Properly detach RadioButtons before clearing group ────────────
+        // Create a copy of the toggle list before iterating, to avoid
+        // ConcurrentModificationException when detaching buttons
+        List<Toggle> togglesCopy = new ArrayList<>(choiceGroup.getToggles());
+        for (Toggle toggle : togglesCopy) {
+            if (toggle instanceof RadioButton) {
+                ((RadioButton) toggle).setToggleGroup(null);
+            }
+        }
         choiceGroup.getToggles().clear();
 
         Integer savedChoice = answers.get(q.questionId);
@@ -248,7 +286,7 @@ public class ExamView {
 
             // On selection: record answer and send ANSWER_CHANGE
             rb.selectedProperty().addListener((obs, wasSelected, isSelected) -> {
-                if (isSelected) {
+                if (isSelected && isExamActive.get()) {
                     answers.put(q.questionId, choice.choiceId);
                     updateNavButtonStyle(index);
                     submitAnswers("ANSWER_CHANGE");
@@ -263,7 +301,9 @@ public class ExamView {
     }
 
     private void saveCurrentSelection() {
-        if (currentIndex < 0 || currentIndex >= exam.questions.size()) return;
+        if (currentIndex < 0 || currentIndex >= exam.questions.size()) {
+            return;
+        }
         Toggle sel = choiceGroup.getSelectedToggle();
         if (sel != null) {
             long qId = exam.questions.get(currentIndex).questionId;
@@ -272,11 +312,17 @@ public class ExamView {
     }
 
     private void navigate(int delta) {
+        if (!isExamActive.get()) {
+            return;  // Prevent navigation after exam ends
+        }
         saveCurrentSelection();
         showQuestion(currentIndex + delta);
     }
 
     private void updateNavButtonStyle(int index) {
+        if (index < 0 || index >= navButtons.length) {
+            return;
+        }
         ExamData.Question q = exam.questions.get(index);
         Integer ans = answers.get(q.questionId);
         if (ans != null && ans >= 0) {
@@ -292,43 +338,59 @@ public class ExamView {
     }
 
     private void confirmAndSubmit() {
-        long unanswered = answers.values().stream().filter(v -> v < 0).count();
+        endExam("TIME_ENDED");
+        studentApplication.stopExam(true);
+    }
 
-        if (unanswered > 0) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Submit Exam");
-            alert.setHeaderText("You have " + unanswered + " unanswered question(s).");
-            alert.setContentText("Are you sure you want to submit?");
-            alert.showAndWait().ifPresent(btn -> {
-                if (btn == ButtonType.OK) {
-                    countdownTimeline.stop();
-                    submitAnswers("TIME_ENDED");
-                }
-            });
-        } else {
-            countdownTimeline.stop();
-            submitAnswers("TIME_ENDED");
+    /**
+     * End the exam, submit answers, and mark as inactive.
+     *
+     * FIX: Properly ends the exam to allow cleanup by StudentApplication
+     */
+    private void endExam(String trigger) {
+        if (!isExamActive.getAndSet(false)) {
+            return;  // Already ended
         }
+
+        if (countdownTimeline != null) {
+            countdownTimeline.stop();
+        }
+
+        submitAnswers(trigger);
     }
 
     private void submitAnswers(String trigger) {
-        if (!submitted.compareAndSet(false, true)
-                && "ANSWER_CHANGE".equals(trigger)) {
-            // For ANSWER_CHANGE allow repeated sends (reset flag)
-            submitted.set(false);
+        if (!isExamActive.get()) {
+            wsService.clearStudentName();
+            return;  // Exam already ended, don't send more answers
         }
 
+        // For ANSWER_CHANGE, allow repeated sends
+        // For TIME_ENDED or TUTOR_STOPPED, only send once
+        if (!"ANSWER_CHANGE".equals(trigger)) {
+            if (!submitted.compareAndSet(false, true)) {
+                wsService.clearStudentName();
+                return;  // Already submitted final answers
+            }
+        }
         // Build a clean map excluding unanswered
         Map<Long, Integer> toSend = new HashMap<>();
         answers.forEach((qId, choiceId) -> {
-            if (choiceId >= 0) toSend.put(qId, choiceId);
+            if (choiceId >= 0) {
+                toSend.put(qId, choiceId);
+            }
         });
 
         wsService.submitAnswers(exam.examId, toSend, trigger);
-    }
+
+        if (!"ANSWER_CHANGE".equals(trigger))
+            wsService.clearStudentName();
+     }
 
     private static String formatTime(int totalSeconds) {
-        if (totalSeconds < 0) totalSeconds = 0;
+        if (totalSeconds < 0) {
+            totalSeconds = 0;
+        }
         int m = totalSeconds / 60;
         int s = totalSeconds % 60;
         return String.format("%02d:%02d", m, s);
