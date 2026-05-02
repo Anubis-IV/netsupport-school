@@ -209,10 +209,9 @@ public class StudentApplication extends Application {
         Rectangle2D bounds = Screen.getPrimary().getBounds();
         Scene scene = new Scene(lockScreen.getRoot(), bounds.getWidth(), bounds.getHeight());
         scene.setFill(Color.BLACK);
+        String cssPath = getClass().getResource("/anubis/netsupportschool/studentapp/ui/app.css").toExternalForm();
         scene.getStylesheets().add(
-                new File("/home/mahmoud/Documents/faculty-temps/term-2/labs/netsupport-school/student-app/src/main/java/anubis/netsupportschool/studentapp/app.css")
-                        .toURI()
-                        .toString()
+                cssPath
         );
 
 
