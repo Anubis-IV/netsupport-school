@@ -23,12 +23,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class ResultService {
-
     private final ResultRepository resultRepository;
     private final ResultAnswerRepository answerRepository;
     private final QuestionRepository questionRepository;
     private final ExamRepository examRepository;
-    private final Map<String, Object> locks = new ConcurrentHashMap<>();
 
     @Autowired
     public ResultService(ResultRepository resultRepository,
@@ -117,28 +115,6 @@ public class ResultService {
                                                   String studentName,
                                                   String hostname,
                                                   Map<Long, Integer> answersMap) {
-        Object lock = locks.computeIfAbsent(studentId, k -> new Object());
-
-        /// SQLite
-//        synchronized (lock) {
-//            return doSaveOrUpdateAnswers(examId, studentId, studentName, hostname, answersMap);
-//        }
-
-//        int retries = 5;
-//
-//        while (true) {
-//            try {
-//                return doSaveOrUpdateAnswers(examId, studentId, studentName, hostname, answersMap);
-//            } catch (Exception e) {
-//                if (--retries == 0) throw e;
-//                try {
-//                    Thread.sleep(500);
-//                } catch (InterruptedException ex) {
-//                    throw new RuntimeException(ex);
-//                }
-//            }
-//        }
-
         return doSaveOrUpdateAnswers(examId, studentId, studentName, hostname, answersMap);
     }
     // =========================
