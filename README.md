@@ -84,7 +84,7 @@ The flow is simple:
 
 The student app is pre-built and distributed as a single JAR file. No JDK installation or compilation is required.
 
-**Step 1 — Download the JAR**
+**Step 1**
 
 Download `student-app.zip` from Google Drive:
 
