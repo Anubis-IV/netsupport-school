@@ -29,20 +29,6 @@ public class UDPBroadcaster implements Runnable {
     @Override
     public void run() {
         try (DatagramSocket socket = new DatagramSocket()) {
-//            socket.setBroadcast(true);
-//            InetAddress broadcastAddr = getBroadcastAddress();
-//
-//            for (int i = 0; i < NUMBER_OF_BROADCASTS; i++) {
-//                String message = String.format(
-//                        "{\"type\":\"TUTOR_HERE\",\"serverIp\":\"%s\",\"serverPort\":%d}",
-//                        serverIp, serverPort
-//                );
-//                byte[] data = message.getBytes();
-//                DatagramPacket packet = new DatagramPacket(data, data.length, broadcastAddr, TARGET_PORT);
-//                socket.send(packet);
-//                Thread.sleep(INTERVAL);
-//            }
-
             socket.setBroadcast(true);
 
             Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
@@ -51,6 +37,9 @@ public class UDPBroadcaster implements Runnable {
                 NetworkInterface iface = interfaces.nextElement();
 
                 if (!iface.isUp() || iface.isLoopback() || iface.isVirtual()) continue;
+
+                String name = iface.getName().toLowerCase();
+                if (name.contains("vbox") || name.contains("vmnet") || name.contains("docker")) continue;
 
                 for (InterfaceAddress addr : iface.getInterfaceAddresses()) {
                     InetAddress broadcast = addr.getBroadcast();
@@ -73,18 +62,5 @@ public class UDPBroadcaster implements Runnable {
         } finally {
             isScanning.set(false);
         }
-    }
-
-    private InetAddress getBroadcastAddress() throws SocketException {
-        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-        while (interfaces.hasMoreElements()) {
-            NetworkInterface iface = interfaces.nextElement();
-            if (iface.isLoopback() || !iface.isUp() || iface.isVirtual()) continue;
-
-            for (InterfaceAddress addr : iface.getInterfaceAddresses()) {
-                if (addr.getBroadcast() != null) return addr.getBroadcast();
-            }
-        }
-        try { return InetAddress.getByName("255.255.255.255"); } catch (Exception e) { return null; }
     }
 }

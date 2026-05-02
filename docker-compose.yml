@@ -1,0 +1,36 @@
+services:
+  mysql:
+    image: mysql:8.3
+    container_name: netsupport-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: netsupport_school
+      MYSQL_USER: mahmoud
+      MYSQL_PASSWORD: 12345678
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "mahmoud", "-p12345678"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: netsupport-backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/netsupport_school?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: mahmoud
+      SPRING_DATASOURCE_PASSWORD: 12345678
+      SPRING_PROFILES_ACTIVE: dev
+
+volumes:
+  mysql_data:
