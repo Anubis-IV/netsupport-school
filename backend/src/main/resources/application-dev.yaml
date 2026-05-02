@@ -21,7 +21,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:sqlite:./src/main/resources/netsupport.db
+    url: jdbc:sqlite:./backend/src/main/resources/netsupport.db?journal_mode=WAL&busy_timeout=5000
     driver-class-name: org.sqlite.JDBC
 
   jpa:

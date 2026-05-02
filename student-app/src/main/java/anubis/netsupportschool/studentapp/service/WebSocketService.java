@@ -1,6 +1,7 @@
 package anubis.netsupportschool.studentapp.service;
 
 import anubis.netsupportschool.studentapp.ExamData;
+import anubis.netsupportschool.studentapp.HeadlessStudentApplication;
 import anubis.netsupportschool.studentapp.StudentApplication;
 
 import java.net.URI;
