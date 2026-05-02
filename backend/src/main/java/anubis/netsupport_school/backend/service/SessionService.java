@@ -26,4 +26,8 @@ public interface SessionService {
     List<WebSocketSession> getConnectedStudents();
 
     void broadcastToTutor(String id, BaseMessage onlineMessage) throws IOException;
+
+    void registerExamSession(Long examId, List<String> studentIds);
+    void handleStudentSubmitted(Long examId, String studentId) throws IOException;
+    void disconnectAllStudents() throws IOException;
 }

@@ -33,6 +33,9 @@ public class StartExamHandler implements MessageHandler<TutorStartExamMessage> {
         studentMessage.questions = ex.getQuestions().stream().map(QuestionMapper::toDTO).toList();
         studentMessage.requireNameEntry = message.requireNameEntry;
 
+        // Register which students are in this exam for auto-stop tracking
+        sessionService.registerExamSession(message.examId, message.studentIds);
+
         sessionService.broadcastToStudents(message.studentIds, studentMessage);
     }
 

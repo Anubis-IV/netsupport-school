@@ -62,17 +62,17 @@ public class BackendApplication {
 //		};
 //	}
 
-	@Bean
-	public CommandLineRunner sqliteConfig(DataSource dataSource) {
-		return args -> {
-			try (Connection conn = dataSource.getConnection();
-                 Statement stmt = conn.createStatement()) {
-
-				stmt.execute("PRAGMA journal_mode=WAL;");
-				stmt.execute("PRAGMA busy_timeout=5000;"); // 5 seconds wait
-			}
-		};
-	}
+//	@Bean
+//	public CommandLineRunner sqliteConfig(DataSource dataSource) {
+//		return args -> {
+//			try (Connection conn = dataSource.getConnection();
+//                 Statement stmt = conn.createStatement()) {
+//
+//				stmt.execute("PRAGMA journal_mode=WAL;");
+//				stmt.execute("PRAGMA busy_timeout=5000;"); // 5 seconds wait
+//			}
+//		};
+//	}
 
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {

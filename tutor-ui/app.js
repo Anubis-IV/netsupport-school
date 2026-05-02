@@ -20,51 +20,50 @@ const state = {
 const $ = (id) => document.getElementById(id);
 
 const dom = {
-  statusDot: $("statusDot"),
-  statusText: $("statusText"),
-  serverUrl: $("serverUrl"),
-  connectBtn: $("connectBtn"),
-  scanBtn: $("scanBtn"),
-  testLoginBtn: $("testLoginBtn"),
-  lockAllBtn: $("lockAllBtn"),
-  unlockAllBtn: $("unlockAllBtn"),
-  startExamBtn: $("startExamBtn"),
-  stopExamBtn: $("stopExamBtn"),
-  statTotal: $("statTotal"),
-  statLocked: $("statLocked"),
-  statSubmitted: $("statSubmitted"),
-  activeExamChip: $("activeExamChip"),
-  activeExamTitle: $("activeExamTitle"),
-  stopExamChip: $("stopExamChip"),
-  selectAll: $("selectAll"),
-  selectionCount: $("selectionCount"),
-  searchInput: $("searchInput"),
-  studentGrid: $("studentGrid"),
-  emptyState: $("emptyState"),
+  statusDot:            $("statusDot"),
+  statusText:           $("statusText"),
+  serverUrl:            $("serverUrl"),
+  connectBtn:           $("connectBtn"),
+  scanBtn:              $("scanBtn"),
+  testLoginBtn:         $("testLoginBtn"),
+  lockAllBtn:           $("lockAllBtn"),
+  unlockAllBtn:         $("unlockAllBtn"),
+  startExamBtn:         $("startExamBtn"),
+  disconnectAllBtn:     $("disconnectAllBtn"),
+  statTotal:            $("statTotal"),
+  statLocked:           $("statLocked"),
+  statSubmitted:        $("statSubmitted"),
+  activeExamChip:       $("activeExamChip"),
+  activeExamTitle:      $("activeExamTitle"),
+  selectAll:            $("selectAll"),
+  selectionCount:       $("selectionCount"),
+  searchInput:          $("searchInput"),
+  studentGrid:          $("studentGrid"),
+  emptyState:           $("emptyState"),
   // Modal
-  startExamModal: $("startExamModal"),
-  closeStartExamModal: $("closeStartExamModal"),
-  modalExamSelect: $("modalExamSelect"),
-  modalRequireName: $("modalRequireName"),
-  modalStudentList: $("modalStudentList"),
-  modalSelectAll: $("modalSelectAll"),
-  modalDeselectAll: $("modalDeselectAll"),
-  cancelStartExamBtn: $("cancelStartExamBtn"),
-  confirmStartExamBtn: $("confirmStartExamBtn"),
+  startExamModal:       $("startExamModal"),
+  closeStartExamModal:  $("closeStartExamModal"),
+  modalExamSelect:      $("modalExamSelect"),
+  modalRequireName:     $("modalRequireName"),
+  modalStudentList:     $("modalStudentList"),
+  modalSelectAll:       $("modalSelectAll"),
+  modalDeselectAll:     $("modalDeselectAll"),
+  cancelStartExamBtn:   $("cancelStartExamBtn"),
+  confirmStartExamBtn:  $("confirmStartExamBtn"),
   // Results
-  examPickerList: $("examPickerList"),
-  resultsEmpty: $("resultsEmpty"),
-  resultsContent: $("resultsContent"),
-  resultsExamTitle: $("resultsExamTitle"),
-  resultsExamMeta: $("resultsExamMeta"),
-  downloadReportBtn: $("downloadReportBtn"),
-  clearResultsBtn: $("clearResultsBtn"),
-  resultsSummary: $("resultsSummary"),
-  resultsTableBody: $("resultsTableBody"),
-  refreshResultsBtn: $("refreshResultsBtn"),
+  examPickerList:       $("examPickerList"),
+  resultsEmpty:         $("resultsEmpty"),
+  resultsContent:       $("resultsContent"),
+  resultsExamTitle:     $("resultsExamTitle"),
+  resultsExamMeta:      $("resultsExamMeta"),
+  downloadReportBtn:    $("downloadReportBtn"),
+  clearResultsBtn:      $("clearResultsBtn"),
+  resultsSummary:       $("resultsSummary"),
+  resultsTableBody:     $("resultsTableBody"),
+  refreshResultsBtn:    $("refreshResultsBtn"),
   // Toast
-  toast: $("toast"),
-  toastMsg: $("toastMsg"),
+  toast:                $("toast"),
+  toastMsg:             $("toastMsg"),
 };
 
 // ── Navigation ────────────────────────────────────────────────────────────
@@ -73,13 +72,9 @@ document.querySelectorAll(".nav-item").forEach((item) => {
   item.addEventListener("click", (e) => {
     e.preventDefault();
     const view = item.dataset.view;
-    document
-      .querySelectorAll(".nav-item")
-      .forEach((n) => n.classList.remove("active"));
+    document.querySelectorAll(".nav-item").forEach((n) => n.classList.remove("active"));
     item.classList.add("active");
-    document
-      .querySelectorAll(".view")
-      .forEach((v) => v.classList.add("hidden"));
+    document.querySelectorAll(".view").forEach((v) => v.classList.add("hidden"));
     $("view-" + view).classList.remove("hidden");
     if (view === "exam-results") loadExamsForResults();
   });
@@ -166,6 +161,13 @@ function handleMessage(msg) {
     case "STUDENT_SUBMITTED":
       onStudentSubmitted(msg);
       break;
+    case "EXAM_COMPLETED":
+      // All students submitted — exam auto-ended
+      state.activeExam = null;
+      dom.activeExamChip.classList.add("hidden");
+      setExamRunning(false);
+      showToast("Exam completed — all students submitted.", "success");
+      break;
     default:
       // unknown — ignore silently
       break;
@@ -176,14 +178,14 @@ function onStudentOnline(msg) {
   const existing = state.students[msg.studentId];
   state.students[msg.studentId] = {
     ...(existing || {}),
-    studentId: msg.studentId,
+    studentId:   msg.studentId,
     studentName: msg.studentName || existing?.studentName || "Student",
-    hostname: existing?.hostname || "",
-    locked: existing?.locked || false,
-    score: existing?.score || 0,
-    totalQ: existing?.totalQ || 0,
-    answeredQ: existing?.answeredQ || 0,
-    submitted: existing?.submitted || false,
+    hostname:    msg.hostname    || existing?.hostname    || "",
+    locked:      existing?.locked    || false,
+    score:       existing?.score     || 0,
+    totalQ:      existing?.totalQ    || 0,
+    answeredQ:   existing?.answeredQ || 0,
+    submitted:   existing?.submitted || false,
   };
   renderStudentGrid();
   updateStats();
@@ -204,10 +206,10 @@ function onStudentSubmitted(msg) {
   if (!s) return;
 
   s.studentName = msg.studentName || s.studentName;
-  s.score = msg.score;
-  s.totalQ = msg.totalQuestions;
-  s.answeredQ = msg.answeredQuestions;
-  s.submitted = msg.trigger !== "ANSWER_CHANGE";
+  s.score       = msg.score;
+  s.totalQ      = msg.totalQuestions;
+  s.answeredQ   = msg.answeredQuestions;
+  s.submitted   = msg.trigger !== "ANSWER_CHANGE";
 
   renderStudentCard(msg.studentId);
   updateStats();
@@ -246,7 +248,41 @@ dom.unlockAllBtn.addEventListener("click", () => {
 });
 
 dom.startExamBtn.addEventListener("click", openStartExamModal);
-dom.stopExamBtn.addEventListener("click", stopExam);
+
+// ── Disconnect All ────────────────────────────────────────────────────────
+
+dom.disconnectAllBtn.addEventListener("click", async () => {
+  if (!confirm("Disconnect all students? They will reconnect fresh on next scan.")) return;
+  try {
+    const apiBase = "http://" + dom.serverUrl.value.trim().replace(/\/$/, "");
+    const res = await fetch(`${apiBase}/api/students/disconnect-all`, { method: "POST" });
+    if (res.ok) {
+      clearStudentTable();
+      showToast("All students disconnected.", "success");
+    } else {
+      showToast("Disconnect failed — server error.", "error");
+    }
+  } catch (e) {
+    showToast("Could not reach server.", "error");
+  }
+});
+
+/** Wipes all student state and re-renders the empty grid. */
+function clearStudentTable() {
+  state.students = {};
+  state.selectedStudents.clear();
+  state.activeExam = null;
+  dom.activeExamChip.classList.add("hidden");
+  renderStudentGrid();
+  updateStats();
+  setExamRunning(false);
+}
+
+/** Enables/disables buttons that must not be used while an exam is running. */
+function setExamRunning(running) {
+  dom.startExamBtn.disabled     = running || !state.connected;
+  dom.disconnectAllBtn.disabled = running || !state.connected;
+}
 
 // ── Student Grid ──────────────────────────────────────────────────────────
 
@@ -268,18 +304,16 @@ function renderStudentGrid() {
   dom.emptyState.classList.toggle("visible", !hasStudents);
 
   // Sync select-all checkbox
-  const allSelected =
-    ids.length > 0 && ids.every((id) => state.selectedStudents.has(id));
+  const allSelected = ids.length > 0 && ids.every((id) => state.selectedStudents.has(id));
   dom.selectAll.checked = allSelected;
-  dom.selectAll.indeterminate =
-    !allSelected && ids.some((id) => state.selectedStudents.has(id));
+  dom.selectAll.indeterminate = !allSelected && ids.some((id) => state.selectedStudents.has(id));
 
   updateSelectionCount();
 }
 
 function renderStudentCard(id) {
   const existing = dom.studentGrid.querySelector(`[data-student-id="${id}"]`);
-  const newCard = buildStudentCard(id);
+  const newCard  = buildStudentCard(id);
   if (existing) {
     dom.studentGrid.replaceChild(newCard, existing);
   }
@@ -292,13 +326,12 @@ function buildStudentCard(id) {
   const card = document.createElement("div");
   card.className =
     "student-card" +
-    (s.locked ? " locked" : "") +
+    (s.locked    ? " locked"    : "") +
     (s.submitted ? " submitted" : "");
   card.dataset.studentId = id;
 
-  const pct = s.totalQ > 0 ? Math.round((s.score / s.totalQ) * 100) : 0;
-  const answeredPct =
-    s.totalQ > 0 ? Math.round((s.answeredQ / s.totalQ) * 100) : 0;
+  const pct        = s.totalQ > 0 ? Math.round((s.score    / s.totalQ) * 100) : 0;
+  const answeredPct = s.totalQ > 0 ? Math.round((s.answeredQ / s.totalQ) * 100) : 0;
 
   card.innerHTML = `
         <div class="student-card-header">
@@ -338,7 +371,7 @@ function buildStudentCard(id) {
   // Lock / Unlock per card
   card.querySelector("[data-action]").addEventListener("click", (e) => {
     const action = e.currentTarget.dataset.action;
-    const sid = e.currentTarget.dataset.id;
+    const sid    = e.currentTarget.dataset.id;
     if (action === "lock") {
       sendWs({ type: "LOCK_STUDENT", studentId: sid });
       state.students[sid].locked = true;
@@ -357,8 +390,7 @@ function buildStudentCard(id) {
 
 dom.selectAll.addEventListener("change", () => {
   const all = Object.keys(state.students);
-  if (dom.selectAll.checked)
-    all.forEach((id) => state.selectedStudents.add(id));
+  if (dom.selectAll.checked) all.forEach((id) => state.selectedStudents.add(id));
   else state.selectedStudents.clear();
   renderStudentGrid();
 });
@@ -373,19 +405,17 @@ function updateSelectionCount() {
 
 function syncSelectAllCheckbox() {
   const ids = Object.keys(state.students);
-  const allSelected =
-    ids.length > 0 && ids.every((id) => state.selectedStudents.has(id));
+  const allSelected = ids.length > 0 && ids.every((id) => state.selectedStudents.has(id));
   dom.selectAll.checked = allSelected;
-  dom.selectAll.indeterminate =
-    !allSelected && ids.some((id) => state.selectedStudents.has(id));
+  dom.selectAll.indeterminate = !allSelected && ids.some((id) => state.selectedStudents.has(id));
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────
 
 function updateStats() {
   const all = Object.values(state.students);
-  dom.statTotal.textContent = all.length;
-  dom.statLocked.textContent = all.filter((s) => s.locked).length;
+  dom.statTotal.textContent     = all.length;
+  dom.statLocked.textContent    = all.filter((s) => s.locked).length;
   dom.statSubmitted.textContent = all.filter((s) => s.submitted).length;
 }
 
@@ -395,7 +425,7 @@ async function openStartExamModal() {
   // Load exams list
   try {
     const apiBase = "http://" + dom.serverUrl.value.trim().replace(/\/$/, "");
-    const res = await fetch(apiBase + "/api/exams");
+    const res  = await fetch(apiBase + "/api/exams");
     const data = await res.json();
     state.exams = data.exams || [];
   } catch (e) {
@@ -404,18 +434,11 @@ async function openStartExamModal() {
   }
 
   // Populate exam select
-  dom.modalExamSelect.innerHTML =
-    '<option value="">— Choose an exam —</option>';
+  dom.modalExamSelect.innerHTML = '<option value="">— Choose an exam —</option>';
   state.exams.forEach((ex) => {
     const opt = document.createElement("option");
-    opt.value = ex.examId;
-    opt.textContent =
-      ex.title +
-      "  (" +
-      ex.questionCount +
-      " Q, " +
-      ex.durationMinutes +
-      " min)";
+    opt.value       = ex.examId;
+    opt.textContent = ex.title + "  (" + ex.questionCount + " Q, " + ex.durationMinutes + " min)";
     dom.modalExamSelect.appendChild(opt);
   });
 
@@ -445,24 +468,20 @@ async function openStartExamModal() {
 }
 
 dom.closeStartExamModal.addEventListener("click", closeStartExamModal);
-dom.cancelStartExamBtn.addEventListener("click", closeStartExamModal);
+dom.cancelStartExamBtn.addEventListener("click",  closeStartExamModal);
 
 dom.modalSelectAll.addEventListener("click", () => {
-  dom.modalStudentList
-    .querySelectorAll('input[type="checkbox"]')
-    .forEach((cb) => {
-      cb.checked = true;
-      cb.closest(".modal-student-item")?.classList.add("selected");
-    });
+  dom.modalStudentList.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+    cb.checked = true;
+    cb.closest(".modal-student-item")?.classList.add("selected");
+  });
 });
 
 dom.modalDeselectAll.addEventListener("click", () => {
-  dom.modalStudentList
-    .querySelectorAll('input[type="checkbox"]')
-    .forEach((cb) => {
-      cb.checked = false;
-      cb.closest(".modal-student-item")?.classList.remove("selected");
-    });
+  dom.modalStudentList.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+    cb.checked = false;
+    cb.closest(".modal-student-item")?.classList.remove("selected");
+  });
 });
 
 function closeStartExamModal() {
@@ -496,42 +515,30 @@ dom.confirmStartExamBtn.addEventListener("click", () => {
   studentIds.forEach((id) => {
     if (state.students[id]) {
       state.students[id].submitted = false;
-      state.students[id].score = 0;
-      state.students[id].totalQ = 0;
+      state.students[id].score     = 0;
+      state.students[id].totalQ    = 0;
       state.students[id].answeredQ = 0;
     }
   });
 
   dom.activeExamChip.classList.remove("hidden");
   dom.activeExamTitle.textContent = state.activeExam.title;
-  dom.stopExamChip.classList.remove("hidden");
-  dom.statSubmitted.textContent = "0";
+  dom.statSubmitted.textContent   = "0";
+
+  setExamRunning(true);
   updateStats();
   renderStudentGrid();
-
   closeStartExamModal();
   showToast("Exam launched: " + state.activeExam.title, "success");
 });
 
-// ── Stop Exam ─────────────────────────────────────────────────────────────
-
-function stopExam() {
-  if (!state.activeExam) return;
-  sendWs({ type: "STOP_EXAM", examId: state.activeExam.examId });
-  state.activeExam = null;
-  dom.activeExamChip.classList.add("hidden");
-  dom.stopExamChip.classList.add("hidden");
-  showToast("Exam stopped", "error");
-}
-
 // ── Results View ──────────────────────────────────────────────────────────
 
 async function loadExamsForResults() {
-  dom.examPickerList.innerHTML =
-    '<div class="loading-small">Loading exams…</div>';
+  dom.examPickerList.innerHTML = '<div class="loading-small">Loading exams…</div>';
   try {
     const apiBase = "http://" + dom.serverUrl.value.trim().replace(/\/$/, "");
-    const res = await fetch(apiBase + "/api/exams");
+    const res  = await fetch(apiBase + "/api/exams");
     const data = await res.json();
     state.exams = data.exams || [];
     renderExamPicker();
@@ -544,15 +551,13 @@ async function loadExamsForResults() {
 function renderExamPicker() {
   dom.examPickerList.innerHTML = "";
   if (state.exams.length === 0) {
-    dom.examPickerList.innerHTML =
-      '<div class="loading-small">No exams found.</div>';
+    dom.examPickerList.innerHTML = '<div class="loading-small">No exams found.</div>';
     return;
   }
   state.exams.forEach((ex) => {
     const item = document.createElement("div");
     item.className =
-      "exam-picker-item" +
-      (state.currentResultExamId === ex.examId ? " active" : "");
+      "exam-picker-item" + (state.currentResultExamId === ex.examId ? " active" : "");
     item.innerHTML = `
             <div class="ep-name">${esc(ex.title)}</div>
             <div class="ep-meta">${ex.questionCount} Q · ${ex.durationMinutes} min</div>`;
@@ -570,11 +575,10 @@ async function selectResultExam(examId) {
 
   try {
     const apiBase = "http://" + dom.serverUrl.value.trim().replace(/\/$/, "");
-    const res = await fetch(apiBase + "/api/results/exam/" + examId);
+    const res  = await fetch(apiBase + "/api/results/exam/" + examId);
     const data = await res.json();
     renderResults(data);
-    dom.downloadReportBtn.href =
-      apiBase + "/api/results/exam/" + examId + "/report";
+    dom.downloadReportBtn.href = apiBase + "/api/results/exam/" + examId + "/report";
   } catch (e) {
     showToast("Failed to load results", "error");
     dom.resultsEmpty.classList.remove("hidden");
@@ -583,27 +587,20 @@ async function selectResultExam(examId) {
 
 function renderResults(data) {
   dom.resultsExamTitle.textContent = data.examTitle || "—";
-  dom.resultsExamMeta.textContent = "Exam ID: " + data.examId;
+  dom.resultsExamMeta.textContent  = "Exam ID: " + data.examId;
 
   const results = data.results || [];
-  const total = results.length;
-  const avg =
+  const total   = results.length;
+  const avg     =
     total === 0
       ? 0
       : results.reduce((sum, r) => {
-          return (
-            sum +
-            (r.totalQuestions > 0 ? (r.score / r.totalQuestions) * 100 : 0)
-          );
+          return sum + (r.totalQuestions > 0 ? (r.score / r.totalQuestions) * 100 : 0);
         }, 0) / total;
   const topScore =
     total === 0
       ? 0
-      : Math.max(
-          ...results.map((r) =>
-            r.totalQuestions > 0 ? (r.score / r.totalQuestions) * 100 : 0,
-          ),
-        );
+      : Math.max(...results.map((r) => (r.totalQuestions > 0 ? (r.score / r.totalQuestions) * 100 : 0)));
 
   dom.resultsSummary.innerHTML = `
         <div class="summary-chip"><strong>${total}</strong><span>Students</span></div>
@@ -615,14 +612,9 @@ function renderResults(data) {
     dom.resultsTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No submissions yet.</td></tr>`;
   } else {
     results.forEach((r) => {
-      const pct =
-        r.totalQuestions > 0
-          ? Math.round((r.score / r.totalQuestions) * 100)
-          : 0;
+      const pct        = r.totalQuestions > 0 ? Math.round((r.score / r.totalQuestions) * 100) : 0;
       const scoreClass = pct >= 80 ? "high" : pct >= 50 ? "mid" : "low";
-      const submitted = r.submittedAt
-        ? new Date(r.submittedAt).toLocaleString()
-        : "—";
+      const submitted  = r.submittedAt ? new Date(r.submittedAt).toLocaleString() : "—";
       const tr = document.createElement("tr");
       tr.innerHTML = `
                 <td>${esc(r.studentName)}</td>
@@ -659,12 +651,7 @@ dom.clearResultsBtn.addEventListener("click", async () => {
 
 function setStatus(cls, text) {
   dom.statusDot.className =
-    "status-dot " +
-    (cls === "online"
-      ? "online"
-      : cls === "connecting"
-        ? "connecting"
-        : "offline");
+    "status-dot " + (cls === "online" ? "online" : cls === "connecting" ? "connecting" : "offline");
   dom.statusText.textContent = text;
 }
 
@@ -675,6 +662,7 @@ function enableButtons(on) {
     dom.lockAllBtn,
     dom.unlockAllBtn,
     dom.startExamBtn,
+    dom.disconnectAllBtn,
   ].forEach((btn) => {
     btn.disabled = !on;
   });
@@ -700,7 +688,6 @@ function esc(str) {
 
 function shortId(id) {
   if (!id) return "";
-  // Show last 8 chars for readability
   return id.length > 12 ? "…" + id.slice(-10) : id;
 }
 

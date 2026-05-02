@@ -3,6 +3,7 @@ package anubis.netsupport_school.backend.api.websocket.handler.student;
 import anubis.netsupport_school.backend.api.websocket.handler.MessageHandler;
 import anubis.netsupport_school.backend.domain.dto.websocket.StudentSubmittedMessage;
 import anubis.netsupport_school.backend.domain.dto.websocket.SubmitAnswersMessage;
+import anubis.netsupport_school.backend.domain.dto.websocket.TriggerType;
 import anubis.netsupport_school.backend.service.ResultService;
 import anubis.netsupport_school.backend.service.SessionService;
 import org.springframework.context.annotation.Scope;
@@ -41,6 +42,11 @@ public class SubmitAnswersHandler implements MessageHandler<SubmitAnswersMessage
         messageToTutor.score = result.getScore();
 
         sessionService.broadcastToTutors(messageToTutor);
+
+        // Only trigger auto-stop check for final submissions, not live ANSWER_CHANGE
+        if (message.trigger == TriggerType.TIME_ENDED || message.trigger == TriggerType.TUTOR_STOPPED) {
+            sessionService.handleStudentSubmitted(message.examId, session.getId());
+        }
     }
 
     @Override

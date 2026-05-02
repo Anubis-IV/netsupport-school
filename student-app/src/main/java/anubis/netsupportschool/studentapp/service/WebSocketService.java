@@ -148,7 +148,15 @@ public class WebSocketService {
                 app.startExam(parseExam(json));
                 break;
             case "STOP_EXAM":
+                this.studentName = null;
                 app.stopExam(true);
+                break;
+            case "DISCONNECT_ALL":
+                // Server is clearing everyone — disconnect cleanly
+                this.studentName = null;
+                disconnect();
+                // Restart UDP discovery to reconnect fresh
+                app.restartDiscovery();
                 break;
             case "TEST_LOGIN":
                 app.testLogin();

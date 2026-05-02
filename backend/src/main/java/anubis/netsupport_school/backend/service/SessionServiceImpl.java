@@ -1,7 +1,6 @@
 package anubis.netsupport_school.backend.service;
 
-import anubis.netsupport_school.backend.domain.dto.websocket.BaseMessage;
-import anubis.netsupport_school.backend.domain.dto.websocket.LockMessage;
+import anubis.netsupport_school.backend.domain.dto.websocket.*;
 import anubis.netsupport_school.backend.repository.SessionRepository;
 import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
@@ -13,13 +12,19 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service @Slf4j
 public class SessionServiceImpl implements SessionService {
+    private final ConcurrentHashMap<Long, Set<String>> pendingSubmissions = new ConcurrentHashMap<>();
     private final int sendTimeout = 1000;
     private final int bufferSizeLimit = 1024 * 1024;
     private final SessionRepository sessionRepository;
     private final ObjectMapper mapper;
+
+
 
     public SessionServiceImpl(SessionRepository sessionRepository, ObjectMapper mapper) {
         this.sessionRepository = sessionRepository;
@@ -108,5 +113,72 @@ public class SessionServiceImpl implements SessionService {
         }
     }
 
+
+
+    @Override
+    public void registerExamSession(Long examId, List<String> studentIds) {
+        // called when tutor starts an exam
+        pendingSubmissions.put(examId, ConcurrentHashMap.newKeySet());
+        pendingSubmissions.get(examId).addAll(studentIds);
+    }
+
+    @Override
+    public void handleStudentSubmitted(Long examId, String studentId) throws IOException {
+        Set<String> pending = pendingSubmissions.get(examId);
+        if (pending == null) return;
+
+        // Remove this student from pending set
+        pending.remove(studentId);
+
+        // Reset student name to default on server side
+        WebSocketSession session = sessionRepository.getStudent(studentId);
+        if (session != null) {
+            int studentNumber = getStudentNumber(studentId);
+            session.getAttributes().put("name", "Student " + studentNumber);
+
+            // Notify tutor of name reset
+            StudentOnlineMessage resetMsg = new StudentOnlineMessage();
+            resetMsg.studentId = studentId;
+            resetMsg.studentName = "Student " + studentNumber;
+
+            broadcastToTutors(resetMsg);
+        }
+
+        // If all students submitted → auto stop exam
+        if (pending.isEmpty()) {
+            pendingSubmissions.remove(examId);
+
+            // Tell all students exam is done
+            StopExamMessage stopMsg = new StopExamMessage();
+            broadcastToAllStudents(stopMsg);
+
+            // Tell tutor exam is completed
+            ExamCompletedMessage completedMsg = new ExamCompletedMessage();
+            completedMsg.examId = examId;
+            broadcastToTutors(completedMsg);
+        }
+    }
+
+    @Override
+    public void disconnectAllStudents() throws IOException {
+        updateRepository();
+        for (WebSocketSession session : sessionRepository.getStudents()) {
+            if (session.isOpen()) {
+                // Send disconnect command first so student-app can clean up
+                DisconnectAllMessage msg = new DisconnectAllMessage();
+                String json = mapper.writeValueAsString(msg);
+                session.sendMessage(new TextMessage(json));
+                session.close();
+            }
+        }
+    }
+
+    private int getStudentNumber(String studentId) {
+        return sessionRepository.getStudents()
+                .stream()
+                .map(WebSocketSession::getId)
+                .toList()
+                .indexOf(studentId) + 1;
+    }
 
 }
