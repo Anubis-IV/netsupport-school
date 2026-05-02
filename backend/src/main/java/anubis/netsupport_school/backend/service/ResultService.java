@@ -119,9 +119,27 @@ public class ResultService {
                                                   Map<Long, Integer> answersMap) {
         Object lock = locks.computeIfAbsent(studentId, k -> new Object());
 
-        synchronized (lock) {
-            return doSaveOrUpdateAnswers(examId, studentId, studentName, hostname, answersMap);
-        }
+        /// SQLite
+//        synchronized (lock) {
+//            return doSaveOrUpdateAnswers(examId, studentId, studentName, hostname, answersMap);
+//        }
+
+//        int retries = 5;
+//
+//        while (true) {
+//            try {
+//                return doSaveOrUpdateAnswers(examId, studentId, studentName, hostname, answersMap);
+//            } catch (Exception e) {
+//                if (--retries == 0) throw e;
+//                try {
+//                    Thread.sleep(500);
+//                } catch (InterruptedException ex) {
+//                    throw new RuntimeException(ex);
+//                }
+//            }
+//        }
+
+        return doSaveOrUpdateAnswers(examId, studentId, studentName, hostname, answersMap);
     }
     // =========================
     // SCORE CALCULATION (OPTIMIZED)

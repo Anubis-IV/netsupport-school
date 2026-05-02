@@ -23,7 +23,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = LockStudentMessage.class,   name = "LOCK_STUDENT"),
         @JsonSubTypes.Type(value = UnlockStudentMessage.class, name = "UNLOCK_STUDENT"),
         @JsonSubTypes.Type(value = ScanStudentsMessage.class, name = "SCAN_STUDENTS"),
-        @JsonSubTypes.Type(value = TutorOnlineMessage.class, name = "TUTOR_ONLINE")
+        @JsonSubTypes.Type(value = TutorOnlineMessage.class, name = "TUTOR_ONLINE"),
+        @JsonSubTypes.Type(value = DisconnectAllMessage.class, name = "DISCONNECT_ALL"),
+        @JsonSubTypes.Type(value = ExamCompletedMessage.class, name = "EXAM_COMPLETED")
 })
 public abstract class BaseMessage {}
 

@@ -4,10 +4,13 @@ import anubis.netsupport_school.backend.domain.dto.response.StudentDTO;
 import anubis.netsupport_school.backend.domain.dto.response.StudentsResponseDTO;
 import anubis.netsupport_school.backend.domain.mapper.StudentMapper;
 import anubis.netsupport_school.backend.service.SessionService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.WebSocketSession;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/students")
@@ -39,5 +42,14 @@ public class StudentController {
                 .toList();
 
         return StudentMapper.toResponse(students);
+    }
+
+
+    @PostMapping("/disconnect-all")
+    public ResponseEntity<?> disconnectAll() throws IOException {
+        sessionService.disconnectAllStudents();
+        return ResponseEntity.ok(
+                Map.of("message", "All students disconnected successfully")
+        );
     }
 }

@@ -59,6 +59,11 @@ public class ExamView {
     private Timeline countdownTimeline = null;
 
     private final AtomicBoolean submitted = new AtomicBoolean(false);
+
+    public boolean isExamActive() {
+        return isExamActive.get();
+    }
+
     private final AtomicBoolean isExamActive = new AtomicBoolean(true);
     private final StudentApplication studentApplication;
 
@@ -172,7 +177,8 @@ public class ExamView {
 
             if (secondsLeft[0] <= 0) {
                 countdownTimeline.stop();
-                submitAnswers("TIME_ENDED");
+                //submitAnswers("TIME_ENDED");
+                confirmAndSubmit();
             }
         }));
         countdownTimeline.setCycleCount(Animation.INDEFINITE);
@@ -188,12 +194,12 @@ public class ExamView {
      * Submits once and stops the timer.
      */
     public void forceSubmit() {
-        if (!isExamActive.getAndSet(false)) {
-            return;  // Already ended, prevent double submission
-        }
-
         if (countdownTimeline != null) {
             countdownTimeline.stop();
+        }
+
+        if (!isExamActive.getAndSet(false)) {
+            return;  // Already ended, prevent double submission
         }
 
         submitAnswers("TUTOR_STOPPED");
@@ -338,7 +344,10 @@ public class ExamView {
     }
 
     private void confirmAndSubmit() {
-        endExam("TIME_ENDED");
+//        endExam("TIME_ENDED");
+
+        countdownTimeline.stop();
+        submitAnswers("TIME_ENDED");
         studentApplication.stopExam(true);
     }
 
@@ -373,6 +382,7 @@ public class ExamView {
                 return;  // Already submitted final answers
             }
         }
+
         // Build a clean map excluding unanswered
         Map<Long, Integer> toSend = new HashMap<>();
         answers.forEach((qId, choiceId) -> {

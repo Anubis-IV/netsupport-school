@@ -56,41 +56,8 @@ public class StudentApplication extends Application {
         wsService = new WebSocketService(this);
         udpService = new UDPDiscoveryService(wsService);
 
-        String exam = "{\n" +
-                "  \"type\": \"START_EXAM\",\n" +
-                "  \"examId\": 1,\n" +
-                "  \"title\": \"قواعد اللغة العربية\",\n" +
-                "  \"durationMinutes\": 1,\n" +
-                "  \"requireNameEntry\": true,\n" +
-                "  \"questions\": [\n" +
-                "    {\n" +
-                "      \"questionId\": 1,\n" +
-                "      \"text\": \"ما هو ناتج 2+2؟\",\n" +
-                "      \"choices\": [\n" +
-                "        { \"choiceId\": 0, \"text\": \"3\" },\n" +
-                "        { \"choiceId\": 1, \"text\": \"4\" },\n" +
-                "        { \"choiceId\": 2, \"text\": \"5\" },\n" +
-                "        { \"choiceId\": 3, \"text\": \"6\" }\n" +
-                "      ]\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
-        //wsService.onMessage(exam);
-
-
-        // String lockReq = "{ \"type\": \"LOCK\" }";
-        // wsService.onMessage(lockReq);
-
-        //String unlockReq = "{ \"type\": \"UNLOCK\" }";
-        //wsService.onMessage(unlockReq);
-
-//        String stopExamReq = "{ \"type\": \"STOP_EXAM\" }";
-//        wsService.onMessage(stopExamReq);
-
-
         // Start UDP listener – waits for the Tutor to broadcast TUTOR_HERE
         udpService.startListening();
-
         log.info("Student app started. Listening for tutor broadcast…");
     }
 
@@ -121,6 +88,13 @@ public class StudentApplication extends Application {
     public void hideLock() {
         Platform.runLater(() -> {
             if (lockStage != null) {
+
+                if(examView != null && examView.isExamActive()){
+                    lockScreen.showContent(examView.getRoot());
+                    lockStage.toFront();
+                    return;
+                }
+
                 lockStage.hide();
                 lockStage.close();
                 lockStage = null;
@@ -187,6 +161,21 @@ public class StudentApplication extends Application {
             examView = null;
 
             log.info("Exam stopped. Unlock: " + unlock);
+        });
+    }
+
+    public void restartDiscovery() {
+        Platform.runLater(() -> {
+            // Hide any open lock screen
+            hideLock();
+
+            // Restart UDP listener so student reconnects fresh
+            // with default name when tutor broadcasts again
+            if (udpService != null) udpService.stop();
+            udpService = new UDPDiscoveryService(wsService);
+            udpService.startListening();
+
+            log.info("Discovery restarted — waiting for tutor broadcast.");
         });
     }
 
